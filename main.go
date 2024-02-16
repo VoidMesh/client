@@ -35,13 +35,15 @@ func main() {
 	switch os.Args[1] {
 	case "resource":
 		switch subcommand {
+
 		case "get":
 			name := os.Args[3]
 			resp, err := resource.Get(ctx, &rpb.GetRequest{Resource: &rpb.Resource{Name: name}})
 			if err != nil {
 				log.Fatalf("could not get resource: %v", err)
 			}
-			log.Printf("Resource: %s", resp.GetResource())
+			log.Printf("Resource: %s", resp.Resource)
+
 		case "list":
 			resp, err := resource.List(ctx, &rpb.ListRequest{})
 			if err != nil {
@@ -52,45 +54,59 @@ func main() {
 
 	case "character":
 		switch subcommand {
+
 		case "create":
 			name := os.Args[3]
 			resp, err := character.Create(ctx, &cpb.CreateRequest{Character: &cpb.Character{Name: name}})
 			if err != nil {
 				log.Fatalf("could not get character: %v", err)
 			}
-			log.Printf("Character: %s", resp.GetCharacter())
+			log.Printf("Character: %s", resp.Character)
+
 		case "read":
-			name := os.Args[3]
-			resp, err := character.Read(ctx, &cpb.ReadRequest{Character: &cpb.Character{Name: name}})
+			id := os.Args[3]
+			resp, err := character.Read(ctx, &cpb.ReadRequest{Id: id})
 			if err != nil {
 				log.Fatalf("could not get character: %v", err)
 			}
-			log.Printf("Character: %s", resp.GetCharacter())
+			log.Printf("Character: %s", resp.Character)
+
+		case "gather":
+			charId := os.Args[3]
+			resourceId := os.Args[4]
+			resp, err := character.GatherResource(ctx, &cpb.GatherResourceRequest{CharacterId: charId, ResourceToGather: &rpb.Resource{Id: resourceId}})
+			if err != nil {
+				log.Fatalf("could not gather resource: %v", err)
+			}
+			log.Printf("Character: %s", resp.Character)
 		}
 
 	case "account":
 		switch subcommand {
+
 		case "create":
 			email := os.Args[3]
 			resp, err := account.Create(ctx, &apb.CreateRequest{Email: email})
 			if err != nil {
 				log.Fatalf("could not create: %v", err)
 			}
-			log.Printf("Account: %s", resp.GetAccount())
+			log.Printf("Account: %s", resp.Account)
+
 		case "auth":
 			email := os.Args[3]
 			resp, err := account.Authenticate(ctx, &apb.AuthenticateRequest{Email: email})
 			if err != nil {
 				log.Fatalf("could not auth: %v", err)
 			}
-			log.Printf("Account: %s", resp.GetAccount())
+			log.Printf("Account: %s", resp.Account)
+
 		case "get":
 			email := os.Args[3]
 			resp, err := account.Get(ctx, &apb.GetRequest{Account: &apb.Account{Email: email}})
 			if err != nil {
 				log.Fatalf("could not get account: %v", err)
 			}
-			log.Printf("Account: %s", resp.GetAccount())
+			log.Printf("Account: %s", resp.Account)
 		}
 	default:
 		log.Fatalf("Invalid command: %s", command)
