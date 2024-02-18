@@ -29,9 +29,17 @@ func (v MainView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (v MainView) View() string {
-	return lipgloss.JoinVertical(
+	return lipgloss.JoinHorizontal(
 		lipgloss.Center,
-		lipgloss.NewStyle().Render("Welcome to Void Mesh!"),
-		lipgloss.NewStyle().Render(fmt.Sprintf("You are playing as: %s", v.game.Character.Name)),
+		lipgloss.JoinVertical(
+			lipgloss.Center,
+			lipgloss.NewStyle().Render("Welcome to Void Mesh!"),
+			lipgloss.NewStyle().Render(fmt.Sprintf("You are playing as: %s", v.game.Character.Name)),
+		),
+		lipgloss.JoinVertical(
+			lipgloss.Center,
+			lipgloss.NewStyle().Render("Resources"),
+			lipgloss.NewStyle().Render(fmt.Sprintf("Resource %v:", v.game.Character.Inventory.Resources)),
+		),
 	)
 }
