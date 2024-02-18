@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -12,8 +13,10 @@ import (
 )
 
 type Game struct {
-	Client   *grpc.ClientConn
-	Services Services
+	Client    *grpc.ClientConn
+	Services  Services
+	Account   *account.Account
+	Character *character.Character
 }
 
 type Services struct {

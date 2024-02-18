@@ -9,24 +9,20 @@ import (
 )
 
 type CharacterView struct {
-	model      tea.Model
-	form       *huh.Form
-	game       game.Game
-	characters []*character.Character
+	model tea.Model
+	form  *huh.Form
+	game  game.Game
 }
 
 func NewCharacterView(g game.Game) tea.Model {
 	v := CharacterView{game: g}
 
-	var charOptions = []huh.Option[string]{}
-
-	for _, c := range v.characters {
-		charOptions = append(charOptions, huh.NewOption(c.Name, c.Id))
-	}
+	charOptions := huh.NewOptions(v.game.Account.Characters...)
 
 	v.form = huh.NewForm(
 		huh.NewGroup(
-			huh.NewSelect[string]().
+			huh.NewSelect[*character.Character]().
+				Key("character").
 				Title("Choose your character").
 				Options(charOptions...),
 		),
@@ -51,7 +47,8 @@ func (v CharacterView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if v.form.State == huh.StateCompleted {
 		// Move to the main view once the form is completed
-		view := NewMainView(&v.model)
+		v.game.Character = v.form.Get("character").(*character.Character)
+		view := NewMainView(v.game)
 		return view, cmd
 	}
 

@@ -58,6 +58,7 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			log.Fatal(err)
 		}
 		// Move to the pick character view once the form is completed
+		v.game.Account = resp.Account
 		view := NewCharacterView(v.game)
 		return view, cmd
 	}
