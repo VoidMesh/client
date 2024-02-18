@@ -23,7 +23,10 @@ type Services struct {
 }
 
 func NewGame() *Game {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithTimeout(time.Second*2))
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
+	conn, err := grpc.DialContext(ctx, "localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	defer cancel()
+
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
