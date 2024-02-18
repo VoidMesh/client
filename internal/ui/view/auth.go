@@ -1,56 +1,42 @@
 package view
 
 import (
-	"github.com/VoidMesh/client/internal/context"
+	"context"
+	"log"
+
+	"github.com/VoidMesh/backend/src/api/v1/account"
+	"github.com/VoidMesh/client/internal/game"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type state int
-
-const (
-	statusNormal state = iota
-	stateDone
-)
-
 type AuthView struct {
-	state state
-	form  *huh.Form
-	width int
-	View  *Model
+	form *huh.Form
+	game game.Game
 }
 
-func NewAuthView(ctx *context.ProgramContext) AuthView {
-	m := AuthView{
-		View: &Model{
-			Ctx: ctx,
-		},
-	}
+func NewAuthView(g game.Game) tea.Model {
+	v := AuthView{game: g}
 
-	m.form = huh.NewForm(
+	v.form = huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
-				Title("Username").
-				Description("Your username").
-				Placeholder("johndoe"),
-
-			huh.NewInput().
-				Title("Password").
-				Description("Your password").
-				Placeholder("password").
-				Password(true),
+				Key("email").
+				Title("Email").
+				Description("Your email").
+				Placeholder("void-mesh@example.com"),
 		),
 	)
 
-	return m
+	return v
 }
 
 func (v AuthView) Init() tea.Cmd {
 	return v.form.Init()
 }
 
-func (v AuthView) Update(msg tea.Msg) (View, tea.Cmd) {
+func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	// Process the form
@@ -60,16 +46,26 @@ func (v AuthView) Update(msg tea.Msg) (View, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 
+	// TODO: Send authentication request
 	if v.form.State == huh.StateCompleted {
-		// Move to the main view once the form is completed
-		view := MainView{View: &Model{}}
+		resp, err := v.game.Services.Account.Authenticate(context.TODO(), &account.AuthenticateRequest{
+			Email: v.form.GetString("email"),
+		})
+
+		log.Print("Response", resp, "Error", err)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		// Move to the pick character view once the form is completed
+		view := NewCharacterView(v.game)
 		return view, cmd
 	}
 
 	return v, tea.Batch(cmds...)
 }
 
-func (v AuthView) Render() string {
+func (v AuthView) View() string {
 	switch v.form.State {
 	case huh.StateCompleted:
 		return lipgloss.NewStyle().Render("State completed!")

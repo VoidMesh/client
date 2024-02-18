@@ -5,6 +5,7 @@ import (
 
 	"github.com/VoidMesh/client/internal/constants"
 	"github.com/VoidMesh/client/internal/context"
+	"github.com/VoidMesh/client/internal/game"
 	"github.com/VoidMesh/client/internal/ui/view"
 	"github.com/VoidMesh/client/internal/utils"
 	"github.com/charmbracelet/bubbles/key"
@@ -16,22 +17,24 @@ type tickMsg time.Time
 
 type Model struct {
 	Tick     constants.Tick
+	Game     game.Game
 	keys     utils.KeyMap
 	err      error
-	currView view.View
+	currView tea.Model
 	ctx      *context.ProgramContext
 }
 
-func NewModel() *Model {
+func NewModel() tea.Model {
 	m := Model{
 		keys: utils.Keys,
+		Game: *game.NewGame(),
 		ctx:  &context.ProgramContext{},
 		Tick: constants.Tick{
 			Duration: constants.TickDuration,
 		},
 	}
 
-	m.currView = view.NewAuthView(m.ctx)
+	m.currView = view.NewAuthView(m.Game)
 
 	return &m
 }
@@ -58,7 +61,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.onWindowSizeChanged(msg)
 
-	case view.View:
+	case tea.Model:
 		m.currView = msg
 
 	case errMsg:
@@ -88,6 +91,6 @@ func (m *Model) onWindowSizeChanged(msg tea.WindowSizeMsg) {
 	m.ctx.Height = msg.Height
 }
 
-func (m Model) View() string {
-	return m.currView.Render()
+func (m *Model) View() string {
+	return m.currView.View()
 }

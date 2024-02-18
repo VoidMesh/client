@@ -8,7 +8,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// Add authentication here
 func main() {
 	if len(os.Getenv("DEBUG")) > 0 {
 		f, err := tea.LogToFile("debug.log", "debug")
@@ -21,6 +20,7 @@ func main() {
 		internal.NewModel(),
 		tea.WithAltScreen(),
 	)
+
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
