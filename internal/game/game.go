@@ -14,14 +14,16 @@ import (
 )
 
 type Game struct {
-	Client    *grpc.ClientConn
-	Services  Services
+	Services Services
+
 	Account   *account.Account
 	Character *character.Character
 	Inventory *inventory.Inventory
 }
 
 type Services struct {
+	Client *grpc.ClientConn
+
 	Account   account.AccountSvcClient
 	Character character.CharacterSvcClient
 	Inventory inventory.InventorySvcClient
@@ -38,10 +40,11 @@ func NewGame() *Game {
 	}
 
 	return &Game{
-		Client: conn,
 		Services: Services{
+			Client:    conn,
 			Account:   account.NewAccountSvcClient(conn),
 			Character: character.NewCharacterSvcClient(conn),
+			Inventory: inventory.NewInventorySvcClient(conn),
 			Resource:  resource.NewResourceSvcClient(conn),
 		},
 	}

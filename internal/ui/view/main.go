@@ -21,7 +21,7 @@ func NewMainView(g game.Game) MainView {
 		CharacterId: v.game.Character.Id,
 	})
 
-	g.Inventory = resp.Inventory
+	v.game.Inventory = resp.Inventory
 
 	return v
 }
@@ -37,17 +37,24 @@ func (v MainView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (v MainView) View() string {
-	return lipgloss.JoinHorizontal(
+	var slotsString []string
+	for _, s := range v.game.Inventory.Slots {
+		slotsString = append(slotsString, fmt.Sprintf("%s: %d", s.Resource.Name, s.Quantity))
+	}
+	return lipgloss.JoinVertical(
 		lipgloss.Center,
 		lipgloss.JoinVertical(
-			lipgloss.Center,
+			lipgloss.Left,
 			lipgloss.NewStyle().Render("Welcome to Void Mesh!"),
 			lipgloss.NewStyle().Render(fmt.Sprintf("You are playing as: %s", v.game.Character.Name)),
 		),
 		lipgloss.JoinVertical(
-			lipgloss.Center,
+			lipgloss.Left,
 			lipgloss.NewStyle().Render("Inventory"),
-			lipgloss.NewStyle().Render(fmt.Sprintf("Inventory %v:", v.game.Inventory)),
+			lipgloss.JoinVertical(
+				lipgloss.Left,
+				slotsString...,
+			),
 		),
 	)
 }
