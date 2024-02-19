@@ -7,6 +7,7 @@ import (
 
 	"github.com/VoidMesh/backend/src/api/v1/account"
 	"github.com/VoidMesh/backend/src/api/v1/character"
+	"github.com/VoidMesh/backend/src/api/v1/inventory"
 	"github.com/VoidMesh/backend/src/api/v1/resource"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,11 +18,13 @@ type Game struct {
 	Services  Services
 	Account   *account.Account
 	Character *character.Character
+	Inventory *inventory.Inventory
 }
 
 type Services struct {
 	Account   account.AccountSvcClient
 	Character character.CharacterSvcClient
+	Inventory inventory.InventorySvcClient
 	Resource  resource.ResourceSvcClient
 }
 

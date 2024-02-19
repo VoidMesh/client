@@ -1,8 +1,10 @@
 package view
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/VoidMesh/backend/src/api/v1/inventory"
 	"github.com/VoidMesh/client/internal/game"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -14,6 +16,12 @@ type MainView struct {
 
 func NewMainView(g game.Game) MainView {
 	v := MainView{game: g}
+
+	resp, _ := v.game.Services.Inventory.Read(context.TODO(), &inventory.ReadRequest{
+		CharacterId: v.game.Character.Id,
+	})
+
+	g.Inventory = resp.Inventory
 
 	return v
 }
@@ -38,8 +46,8 @@ func (v MainView) View() string {
 		),
 		lipgloss.JoinVertical(
 			lipgloss.Center,
-			lipgloss.NewStyle().Render("Resources"),
-			lipgloss.NewStyle().Render(fmt.Sprintf("Resource %v:", v.game.Character.Inventory.Resources)),
+			lipgloss.NewStyle().Render("Inventory"),
+			lipgloss.NewStyle().Render(fmt.Sprintf("Inventory %v:", v.game.Inventory)),
 		),
 	)
 }

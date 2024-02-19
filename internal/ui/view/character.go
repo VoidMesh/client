@@ -1,6 +1,9 @@
 package view
 
 import (
+	"context"
+	"log"
+
 	"github.com/VoidMesh/backend/src/api/v1/character"
 	"github.com/VoidMesh/client/internal/game"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,14 +20,20 @@ type CharacterView struct {
 func NewCharacterView(g game.Game) tea.Model {
 	v := CharacterView{game: g}
 
-	charOptions := huh.NewOptions(v.game.Account.Characters...)
+	resp, err := g.Services.Character.List(context.TODO(), &character.ListRequest{
+		AccountId: g.Account.Id,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	v.form = huh.NewForm(
 		huh.NewGroup(
 			huh.NewSelect[*character.Character]().
 				Key("character").
 				Title("Choose your character").
-				Options(charOptions...),
+				Options(huh.NewOptions(resp.Characters...)...),
 		),
 	)
 

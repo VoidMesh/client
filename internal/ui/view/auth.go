@@ -52,8 +52,6 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Email: v.form.GetString("email"),
 		})
 
-		log.Print("Response", resp, "Error", err)
-
 		if err != nil {
 			log.Fatal(err)
 		}
