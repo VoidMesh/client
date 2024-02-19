@@ -48,7 +48,6 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 
-	// TODO: Send authentication request
 	if v.form.State == huh.StateCompleted {
 		resp, err := v.game.Services.Account.Authenticate(context.TODO(), &account.AuthenticateRequest{
 			Email: v.form.GetString("email"),
@@ -57,6 +56,7 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		// Move to the pick character view once the form is completed
 		v.game.Account = resp.Account
 		view := NewCharacterView(v.ctx, v.game)
