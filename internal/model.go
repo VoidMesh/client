@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/VoidMesh/client/internal/constants"
-	"github.com/VoidMesh/client/internal/context"
 	"github.com/VoidMesh/client/internal/game"
+	"github.com/VoidMesh/client/internal/program_context"
 	"github.com/VoidMesh/client/internal/ui/view"
 	"github.com/VoidMesh/client/internal/utils"
 	"github.com/charmbracelet/bubbles/key"
@@ -21,20 +21,20 @@ type Model struct {
 	keys     utils.KeyMap
 	err      error
 	currView tea.Model
-	ctx      *context.ProgramContext
+	ctx      *program_context.Ctx
 }
 
 func NewModel() tea.Model {
 	m := Model{
 		keys: utils.Keys,
 		Game: *game.NewGame(),
-		ctx:  &context.ProgramContext{},
+		ctx:  &program_context.Ctx{},
 		Tick: constants.Tick{
 			Duration: constants.TickDuration,
 		},
 	}
 
-	m.currView = view.NewAuthView(m.Game)
+	m.currView = view.NewAuthView(m.ctx, m.Game)
 
 	return &m
 }

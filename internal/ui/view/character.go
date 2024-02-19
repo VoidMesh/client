@@ -6,6 +6,7 @@ import (
 
 	"github.com/VoidMesh/backend/src/api/v1/character"
 	"github.com/VoidMesh/client/internal/game"
+	"github.com/VoidMesh/client/internal/program_context"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -15,10 +16,11 @@ type CharacterView struct {
 	model tea.Model
 	form  *huh.Form
 	game  game.Game
+	ctx   *program_context.Ctx
 }
 
-func NewCharacterView(g game.Game) tea.Model {
-	v := CharacterView{game: g}
+func NewCharacterView(ctx *program_context.Ctx, g game.Game) tea.Model {
+	v := CharacterView{ctx: ctx, game: g}
 
 	resp, err := g.Services.Character.List(context.TODO(), &character.ListRequest{
 		AccountId: g.Account.Id,
@@ -57,7 +59,7 @@ func (v CharacterView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if v.form.State == huh.StateCompleted {
 		// Move to the main view once the form is completed
 		v.game.Character = v.form.Get("character").(*character.Character)
-		view := NewMainView(v.game)
+		view := NewMainView(v.ctx, v.game)
 		return view, cmd
 	}
 
