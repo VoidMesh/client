@@ -1,13 +1,11 @@
 package view
 
 import (
-	"context"
-	"fmt"
 	"strings"
 
-	"github.com/VoidMesh/backend/src/api/v1/inventory"
 	"github.com/VoidMesh/client/internal/game"
-	"github.com/VoidMesh/client/internal/program_context"
+	"github.com/VoidMesh/client/internal/ui"
+	"github.com/VoidMesh/client/internal/ui/tab"
 	"github.com/VoidMesh/client/internal/utils"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,31 +13,34 @@ import (
 )
 
 type MainView struct {
-	game    game.Game
-	ctx     *program_context.Ctx
-	currTab int
-	tabs    []string
+	game      game.Game
+	ctx       *ui.Context
+	currTabId int
+	currTab   tab.Tab
+	tabs      []tab.Tab
 }
 
-func NewMainView(ctx *program_context.Ctx, g game.Game) MainView {
+func NewMainView(ctx *ui.Context, g game.Game) MainView {
 	v := MainView{ctx: ctx, game: g}
 
-	resp, _ := v.game.Services.Inventory.Read(context.TODO(), &inventory.ReadRequest{
-		CharacterId: v.game.Character.Id,
-	})
-
-	v.game.Inventory = resp.Inventory
-
-	// TODO: Create a view for each tab
-	v.tabs = []string{
-		"Skills",
-		"Inventory",
-		"Ships",
-		"Quests",
-		"Map",
-		"Industrial",
-		"Credits",
+	v.tabs = []tab.Tab{
+		tab.NewSkillsTab(),
+		tab.NewInventoryTab(),
 	}
+	v.currTab = v.tabs[0]
+
+	for i, t := range v.tabs {
+		v.tabs[i] = t
+	}
+	// v.tabs = []string{
+	// 	"Skills",
+	// 	"Inventory",
+	// 	"Ships",
+	// 	"Quests",
+	// 	"Map",
+	// 	"Industry",
+	// 	"Credits",
+	// }
 
 	return v
 }
@@ -66,6 +67,11 @@ func (v MainView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	cmds = append(cmds, cmd)
+
+	// Delegate command to current view
+	v.currTab, cmd = v.tabs[v.currTabId].Update(msg)
+	cmds = append(cmds, cmd)
+
 	return v, tea.Batch(cmds...)
 }
 
@@ -78,8 +84,7 @@ func (v MainView) View() string {
 			lipgloss.Top,
 			lipgloss.JoinVertical(
 				lipgloss.Left,
-				lipgloss.NewStyle().Render("Welcome to Void Mesh!"),
-				lipgloss.NewStyle().Render(fmt.Sprintf("You are playing as: %s", v.game.Character.Name)),
+				v.currTab.View(),
 			),
 		),
 	)
@@ -118,19 +123,19 @@ func (v MainView) TabsList() string {
 
 	for i, tab := range v.tabs {
 		titleStyle = lipgloss.NewStyle()
-		if v.currTab == i {
+		if v.currTabId == i {
 			titleStyle = titleStyle.Copy().Bold(true).Underline(true)
 		}
-		tabsTitle = append(tabsTitle, titleStyle.Render(tab))
+		tabsTitle = append(tabsTitle, titleStyle.Render(tab.Title()))
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, tabsTitle...)
 }
 
 func (v *MainView) setCurrentTab(tab int) {
-	v.currTab = tab
+	v.currTabId = tab
 }
 
-func (v MainView) getTabAt(id int) string {
+func (v MainView) getTabAt(id int) tab.Tab {
 	tabs := v.tabs
 	return tabs[id]
 }
@@ -138,7 +143,7 @@ func (v MainView) getTabAt(id int) string {
 func (v MainView) getPrevTabId() int {
 	var currTabId int
 	tabs := v.tabs
-	currTabId = (v.currTab - 1) % len(tabs)
+	currTabId = (v.currTabId - 1) % len(tabs)
 	if currTabId < 0 {
 		currTabId += len(tabs)
 	}
@@ -147,5 +152,5 @@ func (v MainView) getPrevTabId() int {
 }
 
 func (v MainView) getNextTabId() int {
-	return (v.currTab + 1) % len(v.tabs)
+	return (v.currTabId + 1) % len(v.tabs)
 }

@@ -5,10 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/VoidMesh/backend/src/api/v1/account"
-	"github.com/VoidMesh/backend/src/api/v1/character"
-	"github.com/VoidMesh/backend/src/api/v1/inventory"
-	"github.com/VoidMesh/backend/src/api/v1/resource"
+	"github.com/VoidMesh/backend/pkg/api/account/v1"
+	"github.com/VoidMesh/backend/pkg/api/character/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -18,7 +16,6 @@ type Game struct {
 
 	Account   *account.Account
 	Character *character.Character
-	Inventory *inventory.Inventory
 }
 
 type Services struct {
@@ -26,8 +23,6 @@ type Services struct {
 
 	Account   account.AccountSvcClient
 	Character character.CharacterSvcClient
-	Inventory inventory.InventorySvcClient
-	Resource  resource.ResourceSvcClient
 }
 
 func NewGame() *Game {
@@ -44,8 +39,6 @@ func NewGame() *Game {
 			Client:    conn,
 			Account:   account.NewAccountSvcClient(conn),
 			Character: character.NewCharacterSvcClient(conn),
-			Inventory: inventory.NewInventorySvcClient(conn),
-			Resource:  resource.NewResourceSvcClient(conn),
 		},
 	}
 }

@@ -3,10 +3,11 @@ package view
 import (
 	"context"
 	"log"
+	"os"
 
-	"github.com/VoidMesh/backend/src/api/v1/account"
+	"github.com/VoidMesh/backend/pkg/api/account/v1"
 	"github.com/VoidMesh/client/internal/game"
-	"github.com/VoidMesh/client/internal/program_context"
+	"github.com/VoidMesh/client/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -15,11 +16,14 @@ import (
 type AuthView struct {
 	form *huh.Form
 	game game.Game
-	ctx  *program_context.Ctx
+	ctx  *ui.Context
 }
 
-func NewAuthView(ctx *program_context.Ctx, g game.Game) tea.Model {
+func NewAuthView(ctx *ui.Context, g game.Game) tea.Model {
 	v := AuthView{ctx: ctx, game: g}
+
+	email := os.Getenv("VOID_MESH_EMAIL")
+	password := os.Getenv("VOID_MESH_PASSWORD")
 
 	v.form = huh.NewForm(
 		huh.NewGroup(
@@ -27,7 +31,14 @@ func NewAuthView(ctx *program_context.Ctx, g game.Game) tea.Model {
 				Key("email").
 				Title("Email").
 				Description("Your email").
-				Placeholder("void-mesh@example.com"),
+				Placeholder("void-mesh@example.com").
+				Value(&email),
+			huh.NewInput().
+				Key("password").
+				Title("Password").
+				Description("Your password").
+				Password(true).
+				Value(&password),
 		),
 	)
 
@@ -50,7 +61,8 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if v.form.State == huh.StateCompleted {
 		resp, err := v.game.Services.Account.Authenticate(context.TODO(), &account.AuthenticateRequest{
-			Email: v.form.GetString("email"),
+			Email:    v.form.GetString("email"),
+			Password: v.form.GetString("password"),
 		})
 
 		if err != nil {
@@ -58,7 +70,11 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Move to the pick character view once the form is completed
-		v.game.Account = resp.Account
+		v.game.Account = &account.Account{
+			Id:        resp.Id,
+			CreatedAt: resp.CreatedAt,
+			UpdatedAt: resp.UpdatedAt,
+		}
 		view := NewCharacterView(v.ctx, v.game)
 		return view, cmd
 	}

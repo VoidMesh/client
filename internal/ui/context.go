@@ -1,6 +1,6 @@
-package program_context
+package ui
 
-type Ctx struct {
+type Context struct {
 	ScreenHeight int
 	ScreenWidth  int
 	Width        int

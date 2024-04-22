@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/VoidMesh/backend/src/api/v1/character"
+	"github.com/VoidMesh/backend/pkg/api/character/v1"
 	"github.com/VoidMesh/client/internal/game"
-	"github.com/VoidMesh/client/internal/program_context"
+	"github.com/VoidMesh/client/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -16,10 +16,10 @@ type CharacterView struct {
 	model tea.Model
 	form  *huh.Form
 	game  game.Game
-	ctx   *program_context.Ctx
+	ctx   *ui.Context
 }
 
-func NewCharacterView(ctx *program_context.Ctx, g game.Game) tea.Model {
+func NewCharacterView(ctx *ui.Context, g game.Game) tea.Model {
 	v := CharacterView{ctx: ctx, game: g}
 
 	resp, err := g.Services.Character.List(context.TODO(), &character.ListRequest{
