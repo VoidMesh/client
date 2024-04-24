@@ -1,44 +1,32 @@
 package game
 
 import (
-	"context"
-	"log"
-	"time"
+	"net/http"
+	"os"
 
-	"github.com/VoidMesh/backend/pkg/api/account/v1"
-	"github.com/VoidMesh/backend/pkg/api/character/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	accountv1 "github.com/VoidMesh/backend/api/gen/go/account/v1"
+	"github.com/VoidMesh/backend/api/gen/go/account/v1/accountv1connect"
+	characterv1 "github.com/VoidMesh/backend/api/gen/go/character/v1"
+	"github.com/VoidMesh/backend/api/gen/go/character/v1/characterv1connect"
 )
 
 type Game struct {
 	Services Services
 
-	Account   *account.Account
-	Character *character.Character
+	Account   *accountv1.Account
+	Character *characterv1.Character
 }
 
 type Services struct {
-	Client *grpc.ClientConn
-
-	Account   account.AccountSvcClient
-	Character character.CharacterSvcClient
+	Account   accountv1connect.AccountServiceClient
+	Character characterv1connect.CharacterServiceClient
 }
 
 func NewGame() *Game {
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
-	conn, err := grpc.DialContext(ctx, "localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	defer cancel()
-
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-
 	return &Game{
 		Services: Services{
-			Client:    conn,
-			Account:   account.NewAccountSvcClient(conn),
-			Character: character.NewCharacterSvcClient(conn),
+			Account:   accountv1connect.NewAccountServiceClient(http.DefaultClient, os.Getenv("API_BACKEND_URL")),
+			Character: characterv1connect.NewCharacterServiceClient(http.DefaultClient, os.Getenv("API_BACKEND_URL")),
 		},
 	}
 }

@@ -5,9 +5,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/VoidMesh/backend/pkg/api/account/v1"
+	"connectrpc.com/connect"
+	accountv1 "github.com/VoidMesh/backend/api/gen/go/account/v1"
+
 	"github.com/VoidMesh/client/internal/game"
 	"github.com/VoidMesh/client/internal/ui"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -60,9 +63,11 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if v.form.State == huh.StateCompleted {
-		resp, err := v.game.Services.Account.Authenticate(context.TODO(), &account.AuthenticateRequest{
-			Email:    v.form.GetString("email"),
-			Password: v.form.GetString("password"),
+		resp, err := v.game.Services.Account.Authenticate(context.TODO(), &connect.Request[accountv1.AuthenticateRequest]{
+			Msg: &accountv1.AuthenticateRequest{
+				Email:    v.form.GetString("email"),
+				Password: v.form.GetString("password"),
+			},
 		})
 
 		if err != nil {
@@ -70,10 +75,10 @@ func (v AuthView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Move to the pick character view once the form is completed
-		v.game.Account = &account.Account{
-			Id:        resp.Id,
-			CreatedAt: resp.CreatedAt,
-			UpdatedAt: resp.UpdatedAt,
+		v.game.Account = &accountv1.Account{
+			Id:        resp.Msg.Id,
+			CreatedAt: resp.Msg.CreatedAt,
+			UpdatedAt: resp.Msg.UpdatedAt,
 		}
 		view := NewCharacterView(v.ctx, v.game)
 		return view, cmd
